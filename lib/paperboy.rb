@@ -230,39 +230,47 @@ module Paperboy
         
         begin
           d = Nokogiri::HTML(open(url))
-          rescue OpenURI::HTTPError
+          rescue OpenURI::HTTPError || Timeout::Error
             d = nil
         end
         
+        # Only grab metadata and add this story to the stories array
+        # if it's reachable. Otherwise, we'll assume it's a dead link and skip it.
         if not d.nil?
           description = d.xpath(@opts[:blurb_xpath]).attr('content').value rescue nil
           img = d.xpath(@opts[:img_xpath]).attr('content').value rescue nil
-        else
-          description = img = ''
-        end
         
-        story_pkg = {
-          :url => url,
-          :hed => hed,
-          :visitors => visitors,
-          :blurb => description || '',
-          :img => img || ''
-        }
-        story_pkgs << story_pkg
-      end      
+          story_pkg = {
+            :url => url,
+            :hed => hed,
+            :visitors => visitors,
+            :blurb => description || '',
+            :img => img || ''
+          }
+          story_pkgs << story_pkg
+        end      
+      
+      end
       
       story_pkgs
     end
   
   end
 
+  #### Templating Paperboy
+
+  # **Paperboy::View** is for templating Paperboy output.
   class View
     
+    # Views are initialized from the `run` method of `PaperBoy::Collector`
+    # but can also be invoked separately, if you have an array of stories.
     def initialize(story_pkgs,outfile)
       @stories = story_pkgs
       @outfile = outfile
     end
     
+    # HTML is the default output method. It will return a bare-bones
+    # page of story output including blurbs and images if available.
     def html
 
       html = ''
@@ -292,17 +300,41 @@ DOCUMENT
       
       end
       
-      f = File.new(@outfile,"w+")
-      f.write(html)
-      f.close
-      
+      self.write(html)
     end
     
+    # Templatize your story output with embedded ruby.
+    # This allows the greatest flexibility for presenting the data.
+    # 
+    # To use, access the `@stories` array, and it's component hashes.
+    # Example:
+    #
+    #    <h1>My Popular Stories</h1>
+    #         
+    #      <% @stories.each do |story| %>
+    #        <div class="story">
+    #           <h2><a href="<%= story[:url] %>"><%= story[:hed] %></a></h2>
+    #           <% if not story[:img].empty? %>
+    #             <div class="img">
+    #                <a href="<%= story[:url] %>"><img src="<%= story[:img] %>"></a>
+    #             </div>
+    #           <% end %>
+    #           <% if not story[:blurb].empty? %>
+    #             <div class="blurb"><%= story[:blurb] %></div>
+    #           <% end %>
+    #        </div>
+    #      <% end %>
+    #
     def erb(template)
       t = File.open(template).read
       template = t.to_s      
       html = ERB.new(template).result(binding)
       
+      self.write(html)
+    end
+    
+    # Write out flat HTML to a file from either plain html or erb templating.
+    def write(html)
       f = File.new(@outfile,"w+")      
       f.write(html)
       f.close
