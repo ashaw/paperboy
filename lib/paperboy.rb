@@ -1,4 +1,3 @@
-require 'pp'
 require 'erb'
 require 'open-uri'
 require 'active_support'
