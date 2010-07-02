@@ -105,9 +105,8 @@ module Paperboy
         v.html
       end
     end
-    
-    
-    def result
+        
+    def outfile
       f = @outfile
       if File::exists?(f)
         puts f
@@ -116,6 +115,9 @@ module Paperboy
       end
     end
     
+    def html
+      File.open(outfile).read
+    end
     
     #### Internals
     
