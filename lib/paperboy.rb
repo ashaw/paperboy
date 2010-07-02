@@ -116,7 +116,7 @@ module Paperboy
     end
     
     def html
-      File.open(outfile).read
+      File.open(@outfile).read
     end
     
     #### Internals

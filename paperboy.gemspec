@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
      "VERSION",
      "lib/paperboy.rb",
      "lib/paperboy/html_builder.rb",
+     "paperboy.gemspec",
      "spec/fixtures/snapshots_12_hours.rb"
   ]
   s.homepage = %q{http://github.com/tpm/paperboy}
