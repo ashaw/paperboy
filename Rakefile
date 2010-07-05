@@ -1,5 +1,8 @@
+$LOAD_PATH.unshift 'lib'
+
 require 'rubygems'
 require 'rake'
+require 'rake/clean'
 
 begin
   require 'jeweler'
@@ -22,3 +25,31 @@ begin
 rescue LoadError
   puts "Jeweler (or a dependency) not available. Install it with: gem install jeweler"
 end
+
+# rocco for docs
+begin
+  require 'rocco/tasks'
+  Rocco::make 'docs/'
+rescue LoadError
+  warn "#$! -- rocco tasks not loaded."
+  task :rocco
+end
+
+desc 'Build rocco docs'
+task :docs => :rocco
+directory 'docs/'
+
+desc 'Build docs and open in browser for the reading'
+task :read => :docs do
+  sh 'open docs/rocco.html'
+end
+
+# Make index.html a copy of rocco.html
+file 'docs/index.html' => 'docs/paperboy.html' do |f|
+  cp 'docs/paperboy.html', 'docs/index.html', :preserve => true
+end
+task :docs => 'docs/index.html'
+CLEAN.include 'docs/index.html'
+
+# Alias for docs task
+task :doc => :docs

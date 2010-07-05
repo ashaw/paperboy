@@ -17,7 +17,8 @@ tmtags
 coverage
 rdoc
 pkg
+docs
 
 ## PROJECT::SPECIFIC
-paperboy_runner.rb
+example
 *_paperboy_output.html

@@ -1,6 +1,5 @@
 require 'erb'
 require 'open-uri'
-require 'active_support'
 require 'chartbeat'
 require 'stats_combiner/filterer'
 require 'hashie'
@@ -10,17 +9,18 @@ require 'nokogiri'
 # HTML files and automated daily newsletters from your most popular stories 
 # over the course of a time period. It sniffs out META tags
 # from URLs to build images and blurbs for the email.
-# It's roughly based on concepts from [stats_combiner.gem](http://github.com/tpm/stats_combiner)
+# It builds on concepts from [stats_combiner.gem][sc] but relies on chartbeat's
+# historical [snapshots][sn] endpoint, where stats_combiner uses real-time data.
+#
+# [sc]: http://github.com/tpm/stats_combiner
+# [sn]: http://chartbeat.pbworks.com/snapshots
 module Paperboy
   
   # `Paperboy::Collector` queries the chartbeat API's snapshots method
   # and consolidates viewers over the specified timespan. 
   # Then it pushes out barebones HTML to be gussied-up and sent.
   class Collector
-    
-    STORIES = []
-    UNIQ_STORIES = []
-    
+        
     attr_accessor :outfile
     
     # Initialize a `Paperboy` instance. This script is relatively expensive, and
@@ -48,7 +48,8 @@ module Paperboy
     #
     # `img_xpath` and `blurb_xpath` are xpath queries that will run on the URL extracted
     # from chartbeat (and any filters run on it) to populate your email with data that might
-    # reside in META tags. Here some I've found useful. 
+    # reside in META tags. Here some I've found useful. `*_xpath` takes the `content` attribute
+    # of whatever HEAD tag is queried.
     #      
     #     :img_xpath => '//head/meta[@property="og:image"]',
     #     :blurb_xpath => '//head/meta[@name="description"]'
@@ -71,8 +72,9 @@ module Paperboy
       @opts = {
         :apikey => nil,
         :host => nil,
-        :start_time => Date.yesterday.beginning_of_day.to_i,
-        :end_time => Date.yesterday.end_of_day.to_i,
+        :start_time => Time.now.to_i - 18000, #four hour default window
+        :end_time => Time.now.to_i - 3600,
+        :interval => 3600,
         :filters => nil,
         :img_xpath => nil,
         :blurb_xpath => nil
@@ -84,9 +86,20 @@ module Paperboy
       
       @c = Chartbeat.new :apikey => @opts[:apikey], :host => @opts[:host]
       @outfile = "#{@opts[:host]}_paperboy_output.html"
+      
+      @stories = []
+      @uniq_stories = []
     end
     
-    # Run the collector according to given options. 
+    # **Run** runs the collector according to parameters set up in `new`.
+    # By default, it will generate an HTML file in the current directory with a 
+    # standard bare-bones structure. There is also an option to pass data through an 
+    # ERB template. That is done like so:
+    #
+    #    p.run :via => 'erb', :template => '/path/to/tmpl.erb'
+    #
+    # ERB templates will expect to iterate over a `@stories` array, where each item is
+    # a hash of story attributes. See Paperboy::View#erb below for more on templating.
     def run(opts = {})
       @run_opts = {
         :via => 'html',
@@ -105,7 +118,8 @@ module Paperboy
         v.html
       end
     end
-        
+    
+    # Determine if there is an outfile for this instance. If so, get the filename.
     def outfile
       f = @outfile
       if File::exists?(f)
@@ -115,6 +129,7 @@ module Paperboy
       end
     end
     
+    # Get the contents of the HTML file. I.e. the final product of the Paperboy run.
     def html
       File.open(@outfile).read
     end
@@ -130,8 +145,8 @@ module Paperboy
       i = @opts[:start_time]
       loop do        
         times << i
-        i += 3600
-        break if i >= @opts[:end_time] || @opts[:end_time] - @opts[:start_time] < 3600
+        i += @opts[:interval]
+        break if i >= @opts[:end_time] || @opts[:end_time] - @opts[:start_time] < @opts[:interval]
       end
       times
     end
@@ -142,7 +157,7 @@ module Paperboy
       times = self.get_collection_intervals
       
       times.each do |time|
-        puts Time.at(time)
+        puts "Collecting for #{Time.at(time)}..."
         h = Hashie::Mash.new(@c.snapshots(:timestamp => time))
         
         titles = h.titles.to_a
@@ -163,7 +178,7 @@ module Paperboy
           warn "Warning! No data collected for #{Time.at(time)}. Results may be skewed! Try setting older timestamps for best results."
         end
         
-        STORIES << titles
+        @stories << titles
       end
       
       self.package_stories
@@ -184,7 +199,7 @@ module Paperboy
     # Find out if we need to filter the stories, and send to `filter_story` if so.
     # Otherwise, weed out the dupes and get ready to package into something we can use.
     def prepackage_stories
-      STORIES.each do |hour|
+      @stories.each do |hour|
         hour.each do |datum|
           path = datum[0].dup
           hed = datum[1].dup
@@ -200,11 +215,11 @@ module Paperboy
           end
                     
           if not path.nil?
-            if not UNIQ_STORIES.collect {|q| q[1] }.include?(hed)
-              UNIQ_STORIES << [url,hed,visitors]
+            if not @uniq_stories.collect {|q| q[1] }.include?(hed)
+              @uniq_stories << [url,hed,visitors]
             else
-              dupe_idx = UNIQ_STORIES.collect{|q| q[1]}.index(hed)
-              UNIQ_STORIES[dupe_idx][2] += visitors
+              dupe_idx = @uniq_stories.collect{|q| q[1]}.index(hed)
+              @uniq_stories[dupe_idx][2] += visitors
             end      
           end
         end
@@ -219,7 +234,7 @@ module Paperboy
       
       self.prepackage_stories
       
-      uniq_stories = UNIQ_STORIES.sort{|a,b| b[2] <=> a[2]}[0..9]
+      uniq_stories = @uniq_stories.sort{|a,b| b[2] <=> a[2]}[0..9]
       
       story_pkgs = []
       
@@ -317,7 +332,9 @@ DOCUMENT
     #           <h2><a href="<%= story[:url] %>"><%= story[:hed] %></a></h2>
     #           <% if not story[:img].empty? %>
     #             <div class="img">
-    #                <a href="<%= story[:url] %>"><img src="<%= story[:img] %>"></a>
+    #                <a href="<%= story[:url] %>">
+    #                 <img src="<%= story[:img] %>">
+    #                </a>
     #             </div>
     #           <% end %>
     #           <% if not story[:blurb].empty? %>

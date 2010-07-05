@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Al Shaw"]
-  s.date = %q{2010-07-02}
+  s.date = %q{2010-07-05}
   s.description = %q{HTML story list generator from the chartbeat API. Good for daily email newsletters.}
   s.email = %q{almshaw@gmail.com}
   s.files = [
@@ -17,7 +17,6 @@ Gem::Specification.new do |s|
      "Rakefile",
      "VERSION",
      "lib/paperboy.rb",
-     "lib/paperboy/html_builder.rb",
      "paperboy.gemspec",
      "spec/fixtures/snapshots_12_hours.rb"
   ]
