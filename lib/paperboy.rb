@@ -6,10 +6,10 @@ require 'hashie'
 require 'nokogiri'
 
 # **Paperboy** is a chartbeat-based library for creating 
-# HTML files and automated daily newsletters from your most popular stories 
-# over the course of a time period. It sniffs out META tags
-# from URLs to build images and blurbs for the email.
-# It builds on concepts from [stats_combiner.gem][sc] but relies on chartbeat's
+# HTML files showcasing from your most popular stories 
+# over the course of a time period (perhaps for a daily newsletter). 
+# It sniffs out META tags from URLs to build images and blurbs for the page.
+# Paperboy builds on concepts from [stats_combiner.gem][sc] but relies on chartbeat's
 # historical [snapshots][sn] endpoint, where stats_combiner uses real-time data.
 #
 # [sc]: http://github.com/tpm/stats_combiner
@@ -17,8 +17,8 @@ require 'nokogiri'
 module Paperboy
   
   # `Paperboy::Collector` queries the chartbeat API's snapshots method
-  # and consolidates viewers over the specified timespan. 
-  # Then it pushes out barebones HTML to be gussied-up and sent.
+  # and consolidates visitors over the specified timespan. 
+  # Then it pushes out barebones HTML to be gussied-up.
   class Collector
         
     attr_accessor :outfile
@@ -31,7 +31,7 @@ module Paperboy
     # API key and host come from your Chartbeat settings. 
     # Start and end times are UNIX timestamps. Paperboy will  collect hourly between them. 
     # It defaults to yesterday from midnight to midnight.
-    # Filters is an instance of StatsCombiner::Filterer. To use it, first
+    # Filters is an instance of `StatsCombiner::Filterer`. To use it, first
     # instantiate a Filterer object with:
     #
     #    e = StatsCombiner::Filterer.new
