@@ -13,7 +13,6 @@ begin
     gem.email = "almshaw@gmail.com"
     gem.homepage = "http://github.com/tpm/paperboy"
     gem.authors = ["Al Shaw"]
-    gem.add_dependency 'activesupport'
     gem.add_dependency 'chartbeat'
     gem.add_dependency 'stats_combiner', '>= 0.0.3'
     gem.add_dependency 'hashie'

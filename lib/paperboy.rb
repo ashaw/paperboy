@@ -54,12 +54,16 @@ module Paperboy
     #     :img_xpath => '//head/meta[@property="og:image"]',
     #     :blurb_xpath => '//head/meta[@name="description"]'
     #
+    # Another option is `:interval`, which determines the interval of snapshots it takes before
+    # `start_time` and `end_time`. The default is 3600 seconds, or one hour.
+    #
     # Usage example:
     #     p = Paperboy::Collector.new {
     #      :api_key => 'chartbeat_api_key',  
     #      :host => 'yourdomain.com',
     #      :start_time => 1277784000
-    #      :end_time => 1277870399
+    #      :end_time => 1277870399,
+    #      :interval => 3600,
     #      :filters => e.filters,
     #      :img_xpath => '//head/meta[@property="og:image"]',
     #      :blurb_xpath => '//head/meta[@name="description"]'
@@ -139,7 +143,8 @@ module Paperboy
     protected
     
     # Find out how many times we'll have to query the Chartbeat API.
-    # We'll only do it once per hour between start and end times.
+    # We'll only do it once per `@opts[:interval]` between start and end times.
+    # By default, the interval is 3600 seconds.
     def get_collection_intervals  
       times = []
       i = @opts[:start_time]
