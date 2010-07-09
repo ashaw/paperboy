@@ -52,3 +52,14 @@ CLEAN.include 'docs/index.html'
 
 # Alias for docs task
 task :doc => :docs
+
+#gh-pages
+
+desc "update gh-pages"
+task :pages => [:docs] do
+  file = "index.html"
+  sh "git checkout gh-pages"
+  sh "cp ./docs/#{file} #{file}"
+  sh "git add #{file}"
+  sh "git commit -m 'docs -> gh-pages'"
+end

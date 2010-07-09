@@ -8,4 +8,12 @@ Install with `gem install paperboy`
 
 To do: tests.
 
+## Author
+
+Al Shaw (al@talkingpointsmemo.com)
+
+## License
+
+Copyright (c) 2010 TPM Media LLC
+
 MIT License (see LICENSE file).

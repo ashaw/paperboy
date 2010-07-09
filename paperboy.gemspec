@@ -5,15 +5,21 @@
 
 Gem::Specification.new do |s|
   s.name = %q{paperboy}
-  s.version = "0.0.0"
+  s.version = "0.1.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Al Shaw"]
-  s.date = %q{2010-07-05}
+  s.date = %q{2010-07-09}
   s.description = %q{HTML story list generator from the chartbeat API. Good for daily email newsletters.}
   s.email = %q{almshaw@gmail.com}
+  s.extra_rdoc_files = [
+    "LICENSE",
+     "README.md"
+  ]
   s.files = [
     ".gitignore",
+     "LICENSE",
+     "README.md",
      "Rakefile",
      "VERSION",
      "lib/paperboy.rb",
@@ -34,20 +40,17 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<activesupport>, [">= 0"])
       s.add_runtime_dependency(%q<chartbeat>, [">= 0"])
       s.add_runtime_dependency(%q<stats_combiner>, [">= 0.0.3"])
       s.add_runtime_dependency(%q<hashie>, [">= 0"])
       s.add_runtime_dependency(%q<nokogiri>, [">= 0"])
     else
-      s.add_dependency(%q<activesupport>, [">= 0"])
       s.add_dependency(%q<chartbeat>, [">= 0"])
       s.add_dependency(%q<stats_combiner>, [">= 0.0.3"])
       s.add_dependency(%q<hashie>, [">= 0"])
       s.add_dependency(%q<nokogiri>, [">= 0"])
     end
   else
-    s.add_dependency(%q<activesupport>, [">= 0"])
     s.add_dependency(%q<chartbeat>, [">= 0"])
     s.add_dependency(%q<stats_combiner>, [">= 0.0.3"])
     s.add_dependency(%q<hashie>, [">= 0"])
