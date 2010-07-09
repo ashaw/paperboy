@@ -6,8 +6,8 @@ require 'hashie'
 require 'nokogiri'
 
 # **Paperboy** is a chartbeat-based library for creating 
-# HTML files showcasing from your most popular stories 
-# over the course of a time period (perhaps for a daily newsletter). 
+# HTML files showcasing your most popular stories 
+# over the course of a given time period (perhaps for a daily newsletter). 
 # It sniffs out META tags from URLs to build images and blurbs for the page.
 # Paperboy builds on concepts from [stats_combiner.gem][sc] but relies on chartbeat's
 # historical [snapshots][sn] endpoint, where stats_combiner uses real-time data.
